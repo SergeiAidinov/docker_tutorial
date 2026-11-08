@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -22,10 +23,11 @@ public class TimeRequestHandler implements HttpHandler{
 
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
-		LocalDateTime localDateTime = LocalDateTime.now();
-		String response = "Current date and time in " + zoneId + " is " + formatter.format(localDateTime);
+		ZonedDateTime currentTime = ZonedDateTime.now(zoneId);
+		String response = "Current date and time in " + zoneId + " is " + formatter.format(currentTime);
 		exchange.sendResponseHeaders(200,  response.length());
-		OutputStream outputStream = exchange.getResponseBody();
+		try( OutputStream outputStream = exchange.getResponseBody()) {
 		outputStream.write(response.getBytes());
+		}
 	}
 }
