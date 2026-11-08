@@ -3,6 +3,7 @@ package com.aydinov.sergey;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Objects;
 import com.sun.net.httpserver.HttpServer;
@@ -13,16 +14,14 @@ public class Workflow {
 	private final HttpClient client;
 	private final HttpServer server;
 	private final TimeRequestHandler timeRequestHandler;
-//	private final ZoneId zoneId;
 	private final String host;
 	private final Integer port;
 
 	private Workflow(ZoneId zoneId, String host, Integer port) throws IOException {
 		super();
-	//	this.zoneId = zoneId;
 		this.host = host;
 		this.port = Integer.valueOf(port);
-		client = HttpClient.newBuilder().build();
+		client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
 		server = HttpServer.create(new InetSocketAddress(port), 0);
 		timeRequestHandler = new TimeRequestHandler(zoneId);
 		server.createContext("/currentTime", timeRequestHandler);

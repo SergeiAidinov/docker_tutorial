@@ -5,13 +5,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
-import java.util.Objects;
+import java.time.Duration;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 public class RandomTimeRequester implements Runnable {
-	
-	// private static RandomTimeRequester randomTimeRequester = null;
 	
 	private final Random random = new Random();
 	private final HttpClient client;
@@ -23,16 +21,12 @@ public class RandomTimeRequester implements Runnable {
 		this.client = client;
 		REQUEST = HttpRequest.newBuilder()
 	            .uri(URI.create(
-	                    "http://" + host + ":" + 8080 + "/currentTime"))
+	                    "http://" + host + ":" + port + "/currentTime"))
 	            .GET()
+	            .timeout(Duration.ofSeconds(2))
 	            .build();
 	}
 	
-//	public static synchronized RandomTimeRequester instance(HttpClient client) {
-//		if (Objects.isNull(randomTimeRequester)) randomTimeRequester = new RandomTimeRequester(client);
-//		return randomTimeRequester;
-//	}
-
 	@Override
 	public void run() {
 		requestTimeRandomly();
@@ -51,6 +45,10 @@ public class RandomTimeRequester implements Runnable {
 			CompletableFuture<HttpResponse<String>> future = client.sendAsync(REQUEST, HANDLER);
 			future.thenAccept(response -> System.out.println("Response: "
                     + response.body()));
+			future.exceptionally(ex -> {
+				System.out.println("HTTP request failed: " + ex.getMessage());
+				return null;
+			});
 		}
 
 	}

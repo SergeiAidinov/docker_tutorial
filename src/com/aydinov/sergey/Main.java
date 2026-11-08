@@ -39,10 +39,7 @@ public class Main {
 			System.exit(1);
 			
 		}
-			
 		System.out.println("Server started with timezone " + zoneId);
 		Workflow.instance(zoneId, host, port).start();
-
 	}
-
 }
