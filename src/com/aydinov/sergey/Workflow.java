@@ -13,32 +13,42 @@ public class Workflow {
 	private final HttpClient client;
 	private final HttpServer server;
 	private final TimeRequestHandler timeRequestHandler;
-	private ZoneId zoneId;
+//	private final ZoneId zoneId;
+	private final String host;
+	private final Integer port;
 
-	private Workflow(ZoneId zoneId) throws IOException {
+	private Workflow(ZoneId zoneId, String host, Integer port) throws IOException {
 		super();
-		this.zoneId = zoneId;
+	//	this.zoneId = zoneId;
+		this.host = host;
+		this.port = Integer.valueOf(port);
 		client = HttpClient.newBuilder().build();
-		server = HttpServer.create(new InetSocketAddress(8080), 0);
+		server = HttpServer.create(new InetSocketAddress(port), 0);
 		timeRequestHandler = new TimeRequestHandler(zoneId);
 		server.createContext("/currentTime", timeRequestHandler);
-		
 
 	}
 
-	public static synchronized Workflow instance(ZoneId zoneId) {
+	public static synchronized Workflow instance(ZoneId zoneId, String host, Integer port) {
 		if (Objects.isNull(workflow))
 			try {
-				workflow = new Workflow(zoneId);
+				workflow = new Workflow(zoneId, host, port);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		return workflow;
 	}
 
-	public boolean startListeningPort() {
+	private boolean startListeningPort() {
 		server.start();
 		return true;
+	}
+
+	public void start() {
+		startListeningPort();
+		RandomTimeRequester randomTimeRequester = new RandomTimeRequester(client, host, port);
+		new Thread(randomTimeRequester).start();
+
 	}
 
 }
